@@ -72,7 +72,7 @@ function solve_tsp(N, c, p, mode)
     @constraint(m, [j=1:N], sum(x[i=1:N, j]) == 1)
 
     if mode == "MTZ"
-        # What is the "potential" of city i
+        # what is the "potential" of city i
     	@variable(m, u[1:N-1] >= 0)
 
         for i = 1:N-1
@@ -103,12 +103,12 @@ if parse(data) isa Number
 end
 
 if isa(data, String) || isa(data, Int)
-    # N = Number of cities
-    # c = Distances between cities
+    # n = number of cities
+    # c = distances between cities
     n, c = generate_c(data)
     #Base.showarray(STDOUT, c, false) #print c in stdout
 
-    # p = Maximal number of cities that can be visited in one tour
+    # p = maximal number of cities that can be visited in one tour
     p = n-1
 
     mode = "MTZ"
