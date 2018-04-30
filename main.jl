@@ -102,7 +102,7 @@ function solve_tsp(N, c, p, mode)
     cycle = Array{Int}(0)
     status = solve(m)
 
-    while !solved(m, x, cycle)
+    while !solved(m, x, cycle, N)
       status = solve(m)
     end
 end
