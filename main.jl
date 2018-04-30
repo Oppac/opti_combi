@@ -81,21 +81,23 @@ function solve_tsp(N, c, p, mode)
     end
 
     if mode == "FCG"
-
+                        
         @variable(m, y[i=1:N, j=1:N] >= 0)
         @variable(m, z[i=1:N, j=1:N] >= 0)
 
         @constraint(m, sum(y[1, j=1:N]) - sum(y[j=1:N, 1]) == N-1)
-        @constraint(m, sum(y[i=2:N, j=1:N]) - sum(y[j=1:N, i=2:N]) == -1)
+        @constraint(m, [i=2:N], sum(y[i, j=1:N]) - sum(y[j=1:N, i]) == -1)
 
         @constraint(m, sum(z[1, j=1:N]) - sum(z[j=1:N, 1]) == -(N-1))
-        @constraint(m, sum(z[i=2:N, j=1:N]) - sum(z[j=1:N, i=2:N]) == 1)
+        @constraint(m, [i=2:N], sum(z[i, j=1:N]) - sum(z[j=1:N, i]) == 1)
+
+        @constraint(m, [i=1:N], sum(y[i, j=1:N]) + sum(z[i, j=1:N]) == N-1)
 
          for j = 1:N, i = 1:N
-            @constraint(m, sum(y[i, j]) + sum(z[i, j]) == N-1)
             @constraint(m, y[i, j] + z[i, j] == (N-1) * x[i, j])
         end
     end
+
 
     cycle = Array{Int}(0)
     status = solve(m)
