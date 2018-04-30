@@ -117,7 +117,7 @@ if isa(data, String) || isa(data, Int)
     # N = Number of cities
     # c = Distances between cities
     N, c = generate_c(data)
-    #Base.showarray(STDOUT, c, false) #print c in stdout
+    Base.showarray(STDOUT, c, false) #print c in stdout
 
     # p = Maximal number of cities that can be visited in one tour
     p = N-1
