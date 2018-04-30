@@ -1,0 +1,62 @@
+\section{Usage}
+
+Make sure to have JuMP and Cbc installed before running the program.\newline
+The program "main.jl" can take two types of arguments. When the program awaits a user input,
+he can specify either an integer or the path to a .txt file of a specific format.
+If the user enter an integer n, a random matrix of the size n*n will be generated.
+If the user enter the path to the .txt, the matrix it contains will be used.\newline
+
+The .txt must have a specific format. It must be a matrix of the distance between the cities for this shape:\newline
+
+\begin{tabular}{|c|c|c|c|}
+  0 & 1 & ... & n \\
+  1 & 0 & x & x \\
+  ... & x & 0 & x \\
+  n & x & x & 0 \\
+\end{tabular}
+\bigbreak
+
+("data\_test.txt" is provided as an example of the correct format)\newline
+Randomly generated matrix are printed on the correct format which means the user can paste them in a
+.txt file to save them and reuse them later.\newline
+
+The matrix is printed by default, it can be removed by commenting
+"Base.showarray(STDOUT, c, false)" (line 122)\newline
+The user can switch between Miller, Tucker, and Zemlin and Finke, Claus, and Gunn by commenting the
+lines 128 and 129 depending on
+the one he wants to use.
+\bigbreak
+mode = "MTZ"\newline
+\#mode = "FCG"
+\bigbreak
+
+The output print on the standard output.
+It contains the cycle that show the order the cities are visited, the length of the path that should be the same size as
+the matrix. Finally, the objective value. The user can display the result matrix by removing the comment
+"Base.showarray(STDOUT, c, false)" (line 53) which is commented by default.
+
+\section{Benchmark}
+
+Benchmark on three randomly-generated matrices of size 5, 10 and 15 respectively\newline
+(see bench1.txt, bench2.txt, bench3.txt)
+
+\bigbreak
+Results of in seconds (using @time on solve\_tsp)\newline
+\begin{tabular}{|c|c|c|}
+\ & MTZ & FCG \\
+bench1 & 0.68s & 0.64s \\
+bench2 & 1.74s & 2.80s \\
+bench3 & 72 & 854 \\
+\end{tabular}
+
+\bigbreak
+
+Results of the objective value\newline
+\begin{tabular}{|c|c|c|}
+\ & MTZ & FCG \\
+bench1 & 32 & 32 \\
+bench2 & 46 & 46 \\
+bench3 & 48 & 44 \\
+\end{tabular}
+\bigbreak
+We were able to use MTZ up to a 18*18 matrix with a solve time of
