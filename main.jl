@@ -1,11 +1,11 @@
 using JuMP, Cbc, Base
 
 # generate random distance matrix
-function generate_random_tsp(n, max_dist)
+function generate_random_tsp(N, max_dist)
     srand()
-    points = rand(0:max_dist, 1, n)
+    points = rand(0:max_dist, 1, N)
     c = Int64[norm(points[:,x] - points[:,y])
-        for x in 1:n, y in 1:n]
+        for x in 1:N, y in 1:N]
     return c
 end
 
@@ -15,17 +15,17 @@ function generate_c(data)
         # see data_test.txt for correct format
         try
             c = readdlm("./$data", Int64)
-            n = size(c, 1)
-            return n, c
+            N = size(c, 1)
+            return N, c
         catch e
             println("File must exist and be of the correct format")
             println("(see data_test.txt as an example)")
         end
     else
         # usage: max_dist = maximum possible distance
-        n = data; max_dist = 25
-        c = generate_random_tsp(n, max_dist)
-        return n, c
+        N = data; max_dist = 25
+        c = generate_random_tsp(N, max_dist)
+        return N, c
     end
 end
 
@@ -34,7 +34,7 @@ function solved(m, x, cycle)
     x_val = getvalue(x)
     push!(cycle, 1)
     while true
-        v, idx = findmax(x_val[f=cycle[end],t=1:n])
+        v, idx = findmax(x_val[f=cycle[end],t=1:N])
         if idx == cycle[1]
             break
         else
@@ -57,7 +57,7 @@ end
 function solve_tsp(N, c, p, mode)
     m = Model(solver = CbcSolver())
 
-    # n^2 binary variables / xij = 1 if connect two cities, 0 otherwise
+    # N^2 binary variables / xij = 1 if connect two cities, 0 otherwise
     # i city coming from / j city going to
     @variable(m, x[i=1:N, j=1:N], Bin)
 
@@ -72,18 +72,29 @@ function solve_tsp(N, c, p, mode)
     @constraint(m, [j=1:N], sum(x[i=1:N, j]) == 1)
 
     if mode == "MTZ"
-        # what is the "potential" of city i
+        # What is the "potential" of city i
     	@variable(m, u[1:N-1] >= 0)
 
-        for i = 1:N-1
-            for j = 1:N-1
-                @constraint(m, u[i] - u[j] + p*x[i, j] <= p - 1)
-            end
+        for i = 1:N-1, j = 1:N-1
+            @constraint(m, u[i] - u[j] + p*x[i, j] <= p-1)
         end
     end
 
     if mode == "FCG"
 
+        @variable(m, y[i=1:N, j=1:N] >= 0)
+        @variable(m, z[i=1:N, j=1:N] >= 0)
+
+        @constraint(m, sum(y[1, j=1:N]) - sum(y[j=1:N, 1]) == N-1)
+        @constraint(m, sum(y[i=2:N, j=1:N]) - sum(y[j=1:N, i=2:N]) == -1)
+
+        @constraint(m, sum(z[1, j=1:N]) - sum(z[j=1:N, 1]) == -(N-1))
+        @constraint(m, sum(z[i=2:N, j=1:N]) - sum(z[j=1:N, i=2:N]) == 1)
+
+         for j = 1:N, i = 1:N
+            @constraint(m, sum(y[i, j]) + sum(z[i, j]) == N-1)
+            @constraint(m, y[i, j] + z[i, j] == (N-1) * x[i, j])
+        end
     end
 
     cycle = Array{Int}(0)
@@ -103,20 +114,33 @@ if parse(data) isa Number
 end
 
 if isa(data, String) || isa(data, Int)
-    # n = number of cities
-    # c = distances between cities
-    n, c = generate_c(data)
+    # N = Number of cities
+    # c = Distances between cities
+    N, c = generate_c(data)
     #Base.showarray(STDOUT, c, false) #print c in stdout
 
-    # p = maximal number of cities that can be visited in one tour
-    p = n-1
+    # p = Maximal number of cities that can be visited in one tour
+    p = N-1
 
     mode = "MTZ"
     #mode = "FCG"
 
-    solve_tsp(n, c, p, mode)
-    #print(@time solve_tsp(n, c, p, mode))
+    solve_tsp(N, c, p, mode)
+    #print(@time solve_tsp(N, c, p, mode))
 
 else
     println("usage: text file matrix or number of cities")
 end
+
+
+#JuMP Citation
+# @article{DunningHuchetteLubin2017,
+# author = {Iain Dunning and Joey Huchette and Miles Lubin},
+# title = {JuMP: A Modeling Language for Mathematical Optimization},
+# journal = {SIAM Review},
+# volume = {59},
+# number = {2},
+# pages = {295-320},
+# year = {2017},
+# doi = {10.1137/15M1020575},
+# }
