@@ -30,7 +30,7 @@ function generate_c(data)
 end
 
 # compute the cycle taken
-function solved(m, x, cycle)
+function solved(N, m, x, cycle)
     x_val = getvalue(x)
     push!(cycle, 1)
     while true
